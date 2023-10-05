@@ -7,8 +7,9 @@ import ProfileStack from './pages/Profile/ProfileStack';
 import AddMenu from './pages/Menu/AddMenu';
 import {Image} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {useSelector} from 'react-redux';
+import SplashScreen from 'react-native-splash-screen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -66,6 +67,9 @@ const MainTabs = () => {
 const App = () => {
   const login = useSelector(state => state.login);
   AsyncStorage.getItem('').then(res => console.log(res));
+  useEffect(() => {
+    SplashScreen.hide();
+  }, []);
   return (
     <NavigationContainer>
       <Stack.Navigator>

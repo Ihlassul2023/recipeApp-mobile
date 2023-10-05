@@ -1,42 +1,48 @@
-import axios from 'axios';
 import {useEffect, useState} from 'react';
 import {
   Text,
   View,
-  ScrollView,
   Image,
   TouchableOpacity,
   FlatList,
+  Alert,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
-import {useSelector} from 'react-redux';
-import {instance} from '../../utils/serviceApi';
+import {useDispatch, useSelector} from 'react-redux';
+import {getMyMenu, deleteMenu} from '../../storages/action/recipe';
 
 const MyMenu = ({navigation}) => {
-  const login = useSelector(state => state.login);
-  let token = login.data.token;
+  const dispatch = useDispatch();
+  const myMenu = useSelector(state => state.myMenu_Reducer);
   const [myRecipe, setMyRecipe] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   useEffect(() => {
     getMyRecipe();
   }, []);
+  useEffect(() => {
+    !myMenu.isLoading && setMyRecipe(myMenu.data);
+  }, [myMenu.isLoading]);
   const getMyRecipe = async () => {
-    try {
-      const result = await (
-        await instance()
-      ).get(`https://determined-pink-foal.cyclic.app/recipe/myRecipe`);
-      setMyRecipe(result.data.data);
-    } catch (error) {
-      console.log(error.response.data.msg);
-    }
+    dispatch(getMyMenu());
   };
-  const deleteRecipe = async id => {
-    try {
-      const result = await (
-        await instance()
-      ).delete(`https://determined-pink-foal.cyclic.app/recipe/${id}`);
-      getMyRecipe();
-    } catch (error) {
-      console.log(error.response.data.msg);
-    }
+  const onRefresh = () => {
+    setRefreshing(true);
+    getMyRecipe();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  };
+
+  const alertDeleteMenu = (menu, id) => {
+    Alert.alert('Delete Menu', `ingin menghapus ${menu}?`, [
+      {
+        text: 'Cancel',
+        onPress: () => console.log('Cancel Pressed'),
+        style: 'cancel',
+      },
+      {text: 'OK', onPress: () => dispatch(deleteMenu(id))},
+    ]);
   };
   return (
     <View style={{marginHorizontal: 20, flex: 1, marginTop: 100}}>
@@ -49,10 +55,15 @@ const MyMenu = ({navigation}) => {
         }}>
         My Recipe
       </Text>
-      <FlatList
-        data={myRecipe}
-        renderItem={({item}) => (
-          <ScrollView>
+      {myMenu.isLoading ? (
+        <ActivityIndicator color="rgba(239, 200, 26, 1)" size="large" />
+      ) : (
+        <FlatList
+          data={myRecipe}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          renderItem={({item}) => (
             <View
               style={{
                 flexDirection: 'row',
@@ -101,14 +112,14 @@ const MyMenu = ({navigation}) => {
                     padding: 15,
                     borderRadius: 5,
                   }}
-                  onPress={() => deleteRecipe(item.id)}>
+                  onPress={() => alertDeleteMenu(item.title, item.id)}>
                   <Text style={{textAlign: 'center'}}>Delete</Text>
                 </TouchableOpacity>
               </View>
             </View>
-          </ScrollView>
-        )}
-      />
+          )}
+        />
+      )}
     </View>
   );
 };

@@ -1,75 +1,176 @@
-import {View, ImageBackground, Text, Image} from 'react-native';
-import axios from 'axios';
+import {
+  View,
+  ImageBackground,
+  Text,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
 import {useEffect, useState} from 'react';
-const DetailMenu = ({route}) => {
+import {
+  getLike,
+  postLike,
+  getSave,
+  postSave,
+} from '../../storages/action/likeSave';
+import {getMenuDetail} from '../../storages/action/recipe';
+import {useDispatch, useSelector} from 'react-redux';
+import {ToastProvider} from 'react-native-toast-notifications';
+const DetailMenu = ({route, navigation}) => {
   const itemId = route.params?.itemId;
   const [recipe, setRecipe] = useState(null);
+  const detailMenu = useSelector(state => state.detail_menuReducer);
+  const dataLike = useSelector(state => state.getLikeReducer);
+  const dataSave = useSelector(state => state.getSaveReducer);
+  const dispatch = useDispatch();
   useEffect(() => {
     getRecipe();
+    getDataLikeSave();
   }, []);
+  useEffect(() => {
+    !detailMenu.isLoading && setRecipe(detailMenu.data);
+  }, [detailMenu.isLoading]);
   const getRecipe = async () => {
-    try {
-      const result = await axios.get(
-        `https://determined-pink-foal.cyclic.app/recipe/${itemId}`,
-      );
-      setRecipe(result.data.data);
-    } catch (error) {
-      console.log(error.response.data.msg);
-    }
+    dispatch(getMenuDetail(itemId));
+  };
+  const getDataLikeSave = () => {
+    dispatch(getLike());
+    dispatch(getSave());
+  };
+  const likeHandle = () => {
+    dispatch(postLike(itemId));
+  };
+  const saveHandle = () => {
+    dispatch(postSave(itemId));
+  };
+  const checkLike = () => {
+    let isLiked = dataLike.data?.filter(like => like.recipe_id == itemId);
+    return isLiked.length > 0;
+  };
+  const checkSave = () => {
+    let isSaved = dataSave.data?.filter(save => save.recipe_id == itemId);
+    return isSaved.length > 0;
   };
   return (
-    <View style={{position: 'relative'}}>
-      <ImageBackground
-        source={{uri: recipe?.photo}}
-        style={{height: '100%', width: '100%'}}>
+    <ToastProvider>
+      <View style={{position: 'relative'}}>
+        <ImageBackground
+          source={{uri: recipe?.photo}}
+          resizeMode="cover"
+          style={{
+            height: '100%',
+            width: '100%',
+          }}>
+          <View
+            style={{
+              width: '100%',
+              flexDirection: 'column',
+              justifyContent: 'space-around',
+              height: 450,
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            }}>
+            <TouchableOpacity
+              style={{marginLeft: 20}}
+              onPress={() => navigation.navigate('HomeMain')}>
+              <Image
+                style={{
+                  width: 20,
+                  height: 20,
+                }}
+                source={require('../../assets/images/backDetail.png')}
+              />
+            </TouchableOpacity>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <View style={{width: 250}}>
+                <Text
+                  style={{
+                    color: '#FFF',
+                    fontSize: 30,
+                    fontWeight: 'bold',
+                    width: '50%',
+                  }}>
+                  {recipe?.title}
+                </Text>
+                <Text style={{color: '#FFF', fontWeight: 'bold'}}>
+                  {' '}
+                  By chef {recipe?.author}
+                </Text>
+              </View>
+              <View style={{flexDirection: 'row', marginLeft: 30}}>
+                {dataSave.data != null && checkSave() ? (
+                  <TouchableOpacity onPress={saveHandle}>
+                    <Image
+                      source={require('../../assets/images/saved.png')}
+                      style={{marginRight: 10}}
+                    />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity onPress={saveHandle}>
+                    <Image
+                      source={require('../../assets/images/save.png')}
+                      style={{marginRight: 10}}
+                    />
+                  </TouchableOpacity>
+                )}
+                {dataLike.data != null && checkLike() ? (
+                  <TouchableOpacity onPress={likeHandle}>
+                    <Image source={require('../../assets/images/liked.png')} />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity onPress={likeHandle}>
+                    <Image source={require('../../assets/images/like.png')} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          </View>
+        </ImageBackground>
         <View
           style={{
-            marginHorizontal: 10,
-            marginTop: 250,
-            flexDirection: 'row',
-            alignItems: 'center',
+            position: 'absolute',
+            backgroundColor: '#FFF',
+            width: '100%',
+            height: 500,
+            top: 400,
+            borderRadius: 20,
+            padding: 20,
           }}>
-          <Text
+          <Text style={{fontSize: 25, fontWeight: 'bold'}}>Ingredients</Text>
+          <View
             style={{
-              color: '#FFF',
-              backgroundColor: 'rgba(239, 200, 26, 1)',
-              borderRadius: 5,
-              textAlign: 'center',
-              fontSize: 30,
-              fontWeight: 'bold',
-              width: '50%',
+              marginTop: 10,
+              backgroundColor: 'rgba(250, 247, 237, 1)',
+              padding: 10,
+              borderRadius: 10,
             }}>
-            {recipe?.title}
-          </Text>
-          <View style={{flexDirection: 'row', marginLeft: 30}}>
-            <Image
-              source={require('../../assets/images/save.png')}
-              style={{marginRight: 10}}
-            />
-            <Image source={require('../../assets/images/like.png')} />
+            {recipe?.ingredients.split(',').map((item, index) => (
+              <View key={index} style={{flexDirection: 'row'}}>
+                <Text
+                  style={{
+                    marginRight: 10,
+                    color: 'rgba(102, 102, 102, 1)',
+                    fontWeight: '900',
+                  }}>
+                  -
+                </Text>
+                <Text
+                  style={{
+                    color: 'rgba(102, 102, 102, 1)',
+                    fontWeight: '900',
+                    fontSize: 16,
+                  }}>
+                  {item}
+                </Text>
+              </View>
+            ))}
           </View>
         </View>
-      </ImageBackground>
-      <View
-        style={{
-          position: 'absolute',
-          backgroundColor: '#FFF',
-          width: '100%',
-          height: 500,
-          top: 400,
-          borderRadius: 20,
-          padding: 20,
-        }}>
-        <Text style={{fontSize: 25, fontWeight: 'bold'}}>Ingredients</Text>
-
-        {recipe?.ingredients.split(',').map((item, index) => (
-          <View key={index} style={{flexDirection: 'row'}}>
-            <Text style={{marginRight: 10}}>-</Text>
-            <Text>{item}</Text>
-          </View>
-        ))}
       </View>
-    </View>
+    </ToastProvider>
   );
 };
 

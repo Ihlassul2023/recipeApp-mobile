@@ -6,23 +6,33 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
+  RefreshControl,
 } from 'react-native';
-import axios from 'axios';
+import {getMenu} from '../../storages/action/recipe';
+import {useDispatch, useSelector} from 'react-redux';
 
 const PopularMenu = ({navigation}) => {
   const [recipes, setRecipes] = useState(null);
+  const dispatch = useDispatch();
+  const menu = useSelector(state => state.menuReducer);
+  const [refreshing, setRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState('ASC');
   useEffect(() => {
-    getMenu();
-  }, []);
-  const getMenu = async () => {
-    try {
-      const result = await axios.get(
-        `https://determined-pink-foal.cyclic.app/recipe`,
-      );
-      setRecipes(result.data.data);
-    } catch (error) {
-      console.log(error.response.data.msg);
-    }
+    getMenuHandle();
+  }, [page, sort]);
+  useEffect(() => {
+    !menu.isLoading && setRecipes(menu.data?.data);
+  }, [menu.isLoading]);
+  const getMenuHandle = async () => {
+    dispatch(getMenu('', 'title', page, sort));
+  };
+  const onRefresh = () => {
+    setRefreshing(true);
+    getMenuHandle();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
   };
   return (
     <View
@@ -47,8 +57,22 @@ const PopularMenu = ({navigation}) => {
           Popular Menu
         </Text>
       </View>
+      <TouchableOpacity
+        style={{
+          backgroundColor: 'rgba(239, 200, 26, 1)',
+          borderRadius: 5,
+          padding: 5,
+          width: 50,
+          marginBottom: 20,
+        }}
+        onPress={() => setSort('DESC')}>
+        <Text style={{textAlign: 'center'}}>Sort</Text>
+      </TouchableOpacity>
       <FlatList
         data={recipes}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         renderItem={({item}) => (
           <ScrollView>
             <View
@@ -92,19 +116,56 @@ const PopularMenu = ({navigation}) => {
                   flexDirection: 'row',
                   paddingRight: 20,
                 }}>
-                <Image
-                  source={require('../../assets/images/save.png')}
-                  style={{marginRight: 5, width: 25, height: 25}}
-                />
-                <Image
-                  source={require('../../assets/images/like.png')}
-                  style={{width: 25, height: 25}}
-                />
+                <View style={{alignItems: 'center'}}>
+                  <Image
+                    source={require('../../assets/images/save.png')}
+                    style={{marginRight: 5, width: 25, height: 25}}
+                  />
+                  <Text>{item.saved_count}</Text>
+                </View>
+                <View style={{alignItems: 'center'}}>
+                  <Image
+                    source={require('../../assets/images/like.png')}
+                    style={{width: 25, height: 25}}
+                  />
+                  <Text>{item.like_count}</Text>
+                </View>
               </View>
             </View>
           </ScrollView>
         )}
       />
+      <View
+        style={{
+          width: '100%',
+          marginTop: 50,
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <TouchableOpacity
+          style={{
+            backgroundColor: 'rgba(239, 200, 26, 1)',
+            borderRadius: 5,
+            padding: 5,
+          }}
+          onPress={() => setPage(page => page - 1)}>
+          <Text>Prev</Text>
+        </TouchableOpacity>
+        <Text style={{marginHorizontal: 10}}>
+          Show {menu.data?.pagination.pageNow}-{menu.data?.pagination.totalPage}{' '}
+          from {menu.data?.pagination.totalData}
+        </Text>
+        <TouchableOpacity
+          style={{
+            backgroundColor: 'rgba(239, 200, 26, 1)',
+            borderRadius: 5,
+            padding: 5,
+          }}
+          onPress={() => setPage(page => page + 1)}>
+          <Text>Next</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };

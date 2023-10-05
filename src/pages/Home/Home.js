@@ -9,9 +9,10 @@ import {
   FlatList,
   SafeAreaView,
 } from 'react-native';
-import {useDispatch} from 'react-redux';
-import {logout} from '../../storages/action/auth';
-import axios from 'axios';
+import {useDispatch, useSelector} from 'react-redux';
+import SelectDropdown from 'react-native-select-dropdown';
+
+import {getMenu} from '../../storages/action/recipe';
 const Items = ({id, photo, title, category, navigation}) => {
   return (
     <ScrollView>
@@ -52,24 +53,21 @@ const Items = ({id, photo, title, category, navigation}) => {
 };
 const Home = ({navigation}) => {
   const dispatch = useDispatch();
+  const allMenu = useSelector(state => state.menuReducer);
+  const [select, setSelect] = useState('');
   const [searchMenu, setSearchMenu] = useState('');
   const [recipes, setRecipes] = useState(null);
   useEffect(() => {
-    getMenu();
+    getMenuHandler();
+    console.log(select);
   }, [searchMenu]);
-  const getMenu = async () => {
-    try {
-      const result = await axios.get(
-        `https://determined-pink-foal.cyclic.app/recipe?searchBy=title&search=${searchMenu}`,
-      );
-      setRecipes(result.data.data);
-    } catch (error) {
-      console.log(error.response.data.msg);
-    }
+  useEffect(() => {
+    !allMenu.isLoading && setRecipes(allMenu.data?.data);
+  }, [allMenu.isLoading]);
+  const getMenuHandler = () => {
+    dispatch(getMenu(searchMenu, select));
   };
-  const cekToken = async () => {
-    dispatch(logout());
-  };
+  const sort = ['title', 'ingredients'];
   return (
     <View style={{backgroundColor: '#FFF', flex: 1}}>
       <StatusBar translucent backgroundColor="transparent" />
@@ -81,7 +79,7 @@ const Home = ({navigation}) => {
         <TextInput
           style={{
             width: '100%',
-            marginVertical: 50,
+            marginTop: 50,
             backgroundColor: 'rgba(239, 239, 239, 1)',
             borderRadius: 10,
             paddingVertical: 10,
@@ -94,6 +92,46 @@ const Home = ({navigation}) => {
           value={searchMenu}
           onChange={e => setSearchMenu(e.nativeEvent.text)}
         />
+        <View
+          style={{
+            marginBottom: 50,
+            marginTop: 20,
+            flexDirection: 'row',
+            alignItems: 'center',
+          }}>
+          <Text style={{marginRight: 10}}>Search By :</Text>
+          <SelectDropdown
+            renderDropdownIcon={() => (
+              <Image
+                source={require('../../assets/images/down-arrow.png')}
+                style={{width: 15, height: 15}}
+              />
+            )}
+            buttonStyle={{width: 150, borderRadius: 5, height: 40}}
+            buttonTextStyle={{
+              fontSize: 16,
+              color: 'rgba(196, 196, 196, 1)',
+              fontWeight: '800',
+            }}
+            dropdownIconPosition="right"
+            data={sort}
+            onSelect={(selectedItem, index) => {
+              console.log(selectedItem);
+              setSelect(selectedItem);
+            }}
+            buttonTextAfterSelection={(selectedItem, index) => {
+              // text represented after item is selected
+              // if data array is an array of objects then return selectedItem.property to render after item is selected
+              return selectedItem;
+            }}
+            rowTextForSelection={(item, index) => {
+              // text represented for each item in dropdown
+              // if data array is an array of objects then return item.property to represent item in dropdown
+              return item;
+            }}
+          />
+        </View>
+
         {searchMenu ? (
           <SafeAreaView>
             <FlatList
@@ -111,9 +149,7 @@ const Home = ({navigation}) => {
           </SafeAreaView>
         ) : (
           <ScrollView>
-            <Text onPress={cekToken} style={{fontSize: 20}}>
-              Popular Recipes
-            </Text>
+            <Text style={{fontSize: 20}}>Popular Recipes</Text>
             <Text style={{fontWeight: '900'}}>Populer check</Text>
             <ScrollView
               horizontal
@@ -243,7 +279,7 @@ const Home = ({navigation}) => {
                     padding: 5,
                   }}>
                   <Text style={{fontWeight: 'bold'}}>Spaghetti</Text>
-                  <Text>Crbonara sauce with grilled ...</Text>
+                  <Text>Carbonara sauce with grilled ...</Text>
                 </View>
               </View>
             </ScrollView>

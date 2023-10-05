@@ -9,10 +9,10 @@ import {
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
-import axios from 'axios';
 import bgAuth from '../../assets/images/bgAuth.png';
 import {postRegister} from '../../storages/action/auth';
 import {useDispatch} from 'react-redux';
+import {ToastProvider} from 'react-native-toast-notifications';
 const Register = ({navigation}) => {
   const [dataUser, setDataUser] = useState({
     name: '',
@@ -26,90 +26,92 @@ const Register = ({navigation}) => {
   const dispatch = useDispatch();
   const handleSubmit = async () => {
     try {
-      dispatch(postRegister(dataUser));
+      dispatch(postRegister(dataUser, navigation));
     } catch (error) {
       console.log(error);
     }
   };
   return (
-    <View style={[styles.containerBg, {color: 'rgba(196, 196, 196, 1)'}]}>
-      <StatusBar translucent backgroundColor="transparent" />
-      <ImageBackground
-        style={[
-          styles.containerBg,
-          {
-            height: '100%',
-            width: '100%',
-            borderRadius: 5,
-            paddingTop: StatusBar.currentHeight,
-          },
-        ]}
-        source={bgAuth}
-        resizeMode="cover"></ImageBackground>
-      <View style={[styles.container, {alignItems: 'center'}]}>
-        <Text
-          style={{
-            color: 'rgba(239, 200, 26, 1)',
-            fontSize: 25,
-            fontWeight: '800',
-          }}>
-          Welcome!
-        </Text>
-        <Text style={{color: 'rgba(196, 196, 196, 1)', marginBottom: 30}}>
-          Register to Recipe App
-        </Text>
-        <View style={{width: '90%'}}>
-          <TextInput
-            style={[styles.styleInput]}
-            placeholder="myname"
-            placeholderTextColor={'rgba(239, 200, 26, 1)'}
-            value={dataUser.name}
-            onChange={e => handleInput('name', e.nativeEvent.text)}
-          />
-          <Image
-            source={require('../../assets/images/user.png')}
-            style={styles.image}
-          />
-        </View>
-        <View style={{width: '90%'}}>
-          <TextInput
-            style={[styles.styleInput]}
-            placeholder="examplexxx@gmail.com"
-            placeholderTextColor={'rgba(239, 200, 26, 1)'}
-            value={dataUser.email}
-            onChange={e => handleInput('email', e.nativeEvent.text)}
-          />
-          <Image
-            source={require('../../assets/images/user.png')}
-            style={styles.image}
-          />
-        </View>
-        <View style={{width: '90%'}}>
-          <TextInput
-            style={[styles.styleInput]}
-            placeholder="Password"
-            placeholderTextColor={'rgba(239, 200, 26, 1)'}
-            value={dataUser.password}
-            onChange={e => handleInput('password', e.nativeEvent.text)}
-          />
-          <Image
-            source={require('../../assets/images/lock.png')}
-            style={styles.image}
-          />
-        </View>
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={{color: '#FFF'}}>REGISTER</Text>
-        </TouchableOpacity>
-        <Text style={{color: 'rgba(196, 196, 196, 1)'}}>
-          have an account?
+    <ToastProvider>
+      <View style={[styles.containerBg, {color: 'rgba(196, 196, 196, 1)'}]}>
+        <StatusBar translucent backgroundColor="transparent" />
+        <ImageBackground
+          style={[
+            styles.containerBg,
+            {
+              height: '100%',
+              width: '100%',
+              borderRadius: 5,
+              paddingTop: StatusBar.currentHeight,
+            },
+          ]}
+          source={bgAuth}
+          resizeMode="cover"></ImageBackground>
+        <View style={[styles.container, {alignItems: 'center'}]}>
           <Text
-            style={{color: 'rgba(239, 200, 26, 1)'}}
-            onPress={() => navigation.navigate('Login')}>
-            Sign In
+            style={{
+              color: 'rgba(239, 200, 26, 1)',
+              fontSize: 25,
+              fontWeight: '800',
+            }}>
+            Welcome!
           </Text>
-        </Text>
+          <Text style={{color: 'rgba(196, 196, 196, 1)', marginBottom: 30}}>
+            Register to Recipe App
+          </Text>
+          <View style={{width: '90%'}}>
+            <TextInput
+              style={[styles.styleInput]}
+              placeholder="myname"
+              placeholderTextColor={'rgba(239, 200, 26, 1)'}
+              value={dataUser.name}
+              onChange={e => handleInput('name', e.nativeEvent.text)}
+            />
+            <Image
+              source={require('../../assets/images/user.png')}
+              style={styles.image}
+            />
+          </View>
+          <View style={{width: '90%'}}>
+            <TextInput
+              style={[styles.styleInput]}
+              placeholder="examplexxx@gmail.com"
+              placeholderTextColor={'rgba(239, 200, 26, 1)'}
+              value={dataUser.email}
+              onChange={e => handleInput('email', e.nativeEvent.text)}
+            />
+            <Image
+              source={require('../../assets/images/user.png')}
+              style={styles.image}
+            />
+          </View>
+          <View style={{width: '90%'}}>
+            <TextInput
+              style={[styles.styleInput]}
+              placeholder="Password"
+              placeholderTextColor={'rgba(239, 200, 26, 1)'}
+              value={dataUser.password}
+              onChange={e => handleInput('password', e.nativeEvent.text)}
+            />
+            <Image
+              source={require('../../assets/images/lock.png')}
+              style={styles.image}
+            />
+          </View>
+          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+            <Text style={{color: '#FFF'}}>REGISTER</Text>
+          </TouchableOpacity>
+          <Text style={{color: 'rgba(196, 196, 196, 1)'}}>
+            have an account?
+            <Text
+              style={{color: 'rgba(239, 200, 26, 1)'}}
+              onPress={() => navigation.navigate('Login')}>
+              Sign In
+            </Text>
+          </Text>
+        </View>
       </View>
-    </View>
+    </ToastProvider>
   );
 };
 const styles = StyleSheet.create({

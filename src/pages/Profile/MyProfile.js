@@ -135,7 +135,7 @@ const MyProfile = ({navigation}) => {
                 <TextInput
                   style={[style.input, {marginTop: 50, marginBottom: 20}]}
                   placeholder="Name"
-                  placeholderTextColor="rgba(196, 196, 196, 1)"
+                  placeholderTextColor="rgba(239, 200, 26, 1)"
                   value={dataUser.name}
                   onChange={e => handleInput('name', e.nativeEvent.text)}
                 />
@@ -149,7 +149,7 @@ const MyProfile = ({navigation}) => {
                     style={{
                       width: '25%',
                       marginRight: 20,
-                      backgroundColor: 'rgba(196, 196, 196, 1)',
+                      backgroundColor: 'rgba(239, 200, 26, 1)',
                       borderRadius: 10,
                       height: 50,
                       fontWeight: 'bold',
@@ -158,7 +158,7 @@ const MyProfile = ({navigation}) => {
                       alignItems: 'center',
                     }}
                     onPress={openImagePicker}>
-                    <Text>Add photo</Text>
+                    <Text style={{color: '#FFF'}}>Add photo</Text>
                   </TouchableOpacity>
                   <View
                     style={{
@@ -290,14 +290,15 @@ const MyProfile = ({navigation}) => {
               </View>
               <TouchableOpacity
                 style={{
-                  marginTop: 40,
-                  backgroundColor: 'red',
-                  borderRadius: 5,
-                  width: '50%',
-                  padding: 5,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginTop: 30,
                 }}
                 onPress={cekToken}>
-                <Text style={{color: '#FFF', textAlign: 'center'}}>Logout</Text>
+                <Image source={require('../../assets/images/logoutIcon.png')} />
+                <Text style={{marginLeft: 10, fontSize: 16, fontWeight: '900'}}>
+                  Logout
+                </Text>
               </TouchableOpacity>
             </>
           )}
@@ -310,12 +311,14 @@ const style = StyleSheet.create({
   input: {
     width: '100%',
     marginVertical: 20,
-    backgroundColor: 'rgba(196, 196, 196, 1)',
+    borderColor: 'rgba(239, 200, 26, 1)',
+    backgroundColor: '#FFF',
+    borderWidth: 2,
     borderRadius: 10,
     paddingVertical: 20,
     paddingLeft: 10,
     fontWeight: 'bold',
-    color: '#FFF',
+    color: 'rgba(239, 200, 26, 1)',
   },
   button: {
     width: '100%',

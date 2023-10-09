@@ -3,6 +3,7 @@ import {combineReducers} from 'redux';
 import login from './login';
 import register from './register';
 import menuReducer from './menu/menu';
+import menuHomeReducer from './menu/menu_home';
 import post_menuReducer from './menu/post_menu';
 import delete_menuReducer from './menu/delete_menu';
 import detail_menuReducer from './menu/detail_menu';
@@ -20,6 +21,7 @@ const appReducers = combineReducers({
   login,
   register,
   menuReducer,
+  menuHomeReducer,
   post_menuReducer,
   delete_menuReducer,
   detail_menuReducer,

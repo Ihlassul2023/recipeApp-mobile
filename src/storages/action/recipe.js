@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const url = 'https://determined-pink-foal.cyclic.app';
 
 export const getMenu =
-  (search = '', select = 'title', page = 1, sort = 'ASC') =>
+  (search = '', select = 'title', page = 1, sort = 'DESC') =>
   async dispatch => {
     try {
       dispatch({type: 'GET_MENU_PENDING'});
@@ -16,6 +16,21 @@ export const getMenu =
     } catch (err) {
       console.log('error');
       dispatch({payload: err.response.data.msg, type: 'GET_MENU_FAILED'});
+      console.log(err);
+    }
+  };
+export const getMenuHome =
+  (search = '', select = 'title', page = 1, sort = 'DESC') =>
+  async dispatch => {
+    try {
+      dispatch({type: 'GET_MENU_HOME_PENDING'});
+      const result = await axios.get(
+        `${url}/recipe/newRecipe?searchBy=${select}&search=${search}&page=${page}&sort=${sort}&limit=3`,
+      );
+      dispatch({payload: result.data, type: 'GET_MENU_HOME_SUCCESS'});
+    } catch (err) {
+      console.log('error');
+      dispatch({payload: err.response.data.msg, type: 'GET_MENU_HOME_FAILED'});
       console.log(err);
     }
   };
@@ -42,6 +57,9 @@ export const postMenu = data => async (dispatch, getState) => {
       },
     });
     Toast.show(result.data.msg);
+    setTimeout(() => {
+      dispatch(getMenuHome());
+    }, 1000);
     dispatch({payload: result.data.msg, type: 'POST_MENU_SUCCESS'});
   } catch (err) {
     console.log('error');
@@ -65,8 +83,8 @@ export const updateMenu = (data, id) => async (dispatch, getState) => {
   } catch (err) {
     console.log(err);
     console.log('error');
-    // Toast.show(err.response.data.msg);
-    // dispatch({payload: err.response.data.msg, type: 'PUT_MENU_FAILED'});
+    Toast.show(err.response.data.msg);
+    dispatch({payload: err.response.data.msg, type: 'PUT_MENU_FAILED'});
   }
 };
 
@@ -77,6 +95,7 @@ export const deleteMenu = id => async dispatch => {
     Toast.show(result.data.msg);
     setTimeout(() => {
       dispatch(getMyMenu());
+      dispatch(getMenuHome());
     }, 1000);
     dispatch({payload: result.data.msg, type: 'DELETE_MENU_SUCCESS'});
   } catch (err) {

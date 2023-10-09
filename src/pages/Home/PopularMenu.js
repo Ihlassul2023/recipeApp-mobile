@@ -17,7 +17,7 @@ const PopularMenu = ({navigation}) => {
   const menu = useSelector(state => state.menuReducer);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
-  const [sort, setSort] = useState('ASC');
+  const [sort, setSort] = useState('DESC');
   useEffect(() => {
     getMenuHandle();
   }, [page, sort]);
@@ -57,17 +57,6 @@ const PopularMenu = ({navigation}) => {
           Popular Menu
         </Text>
       </View>
-      <TouchableOpacity
-        style={{
-          backgroundColor: 'rgba(239, 200, 26, 1)',
-          borderRadius: 5,
-          padding: 5,
-          width: 50,
-          marginBottom: 20,
-        }}
-        onPress={() => setSort('DESC')}>
-        <Text style={{textAlign: 'center'}}>Sort</Text>
-      </TouchableOpacity>
       <FlatList
         data={recipes}
         refreshControl={
@@ -92,6 +81,7 @@ const PopularMenu = ({navigation}) => {
                     flexDirection: 'column',
                     height: '100%',
                     marginLeft: 10,
+                    width: 150,
                   }}>
                   <Text
                     onPress={() =>

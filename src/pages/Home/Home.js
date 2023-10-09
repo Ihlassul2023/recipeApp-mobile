@@ -8,11 +8,14 @@ import {
   StatusBar,
   FlatList,
   SafeAreaView,
+  ActivityIndicator,
+  RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import SelectDropdown from 'react-native-select-dropdown';
 
-import {getMenu} from '../../storages/action/recipe';
+import {getMenu, getMenuHome} from '../../storages/action/recipe';
 const Items = ({id, photo, title, category, navigation}) => {
   return (
     <ScrollView>
@@ -51,12 +54,15 @@ const Items = ({id, photo, title, category, navigation}) => {
     </ScrollView>
   );
 };
+
 const Home = ({navigation}) => {
   const dispatch = useDispatch();
   const allMenu = useSelector(state => state.menuReducer);
+  const menuHome = useSelector(state => state.menuHomeReducer);
   const [select, setSelect] = useState('');
   const [searchMenu, setSearchMenu] = useState('');
   const [recipes, setRecipes] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   useEffect(() => {
     getMenuHandler();
     console.log(select);
@@ -66,6 +72,14 @@ const Home = ({navigation}) => {
   }, [allMenu.isLoading]);
   const getMenuHandler = () => {
     dispatch(getMenu(searchMenu, select));
+    dispatch(getMenuHome());
+  };
+  const onRefresh = () => {
+    setRefreshing(true);
+    getMenuHandler();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
   };
   const sort = ['title', 'ingredients'];
   return (
@@ -94,7 +108,7 @@ const Home = ({navigation}) => {
         />
         <View
           style={{
-            marginBottom: 50,
+            marginBottom: 30,
             marginTop: 20,
             flexDirection: 'row',
             alignItems: 'center',
@@ -120,22 +134,20 @@ const Home = ({navigation}) => {
               setSelect(selectedItem);
             }}
             buttonTextAfterSelection={(selectedItem, index) => {
-              // text represented after item is selected
-              // if data array is an array of objects then return selectedItem.property to render after item is selected
               return selectedItem;
             }}
             rowTextForSelection={(item, index) => {
-              // text represented for each item in dropdown
-              // if data array is an array of objects then return item.property to represent item in dropdown
               return item;
             }}
           />
         </View>
-
         {searchMenu ? (
           <SafeAreaView>
             <FlatList
               data={recipes}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
               renderItem={({item}) => (
                 <Items
                   id={item.id}
@@ -151,48 +163,60 @@ const Home = ({navigation}) => {
           <ScrollView>
             <Text style={{fontSize: 20}}>Popular Recipes</Text>
             <Text style={{fontWeight: '900'}}>Populer check</Text>
-            <ScrollView
-              horizontal
-              style={{flexDirection: 'row', marginTop: 20}}>
-              <View style={{marginRight: 10}}>
-                <Image
-                  style={{position: 'relative'}}
-                  source={require('../../assets/images/swipe1.png')}
+            {allMenu.isLoading ? (
+              <ActivityIndicator color="rgba(239, 200, 26, 1)" size="large" />
+            ) : (
+              <SafeAreaView>
+                <FlatList
+                  horizontal
+                  data={recipes}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={refreshing}
+                      onRefresh={onRefresh}
+                    />
+                  }
+                  style={{flexDirection: 'row', marginTop: 20}}
+                  renderItem={({item}) => (
+                    <TouchableOpacity
+                      onPress={() => navigation.navigate('PopularMenu')}>
+                      <View style={{position: 'relative', marginRight: 10}}>
+                        <Image
+                          style={{
+                            position: 'relative',
+                            height: 150,
+                            width: 150,
+                            borderRadius: 10,
+                          }}
+                          source={{uri: item.photo}}
+                        />
+                        <View
+                          style={{
+                            position: 'absolute',
+                            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                            width: 150,
+                            height: 150,
+                            borderRadius: 10,
+                            flexDirection: 'row',
+                            alignItems: 'flex-end',
+                            paddingLeft: 10,
+                            paddingBottom: 10,
+                          }}>
+                          <Text
+                            style={{
+                              color: '#fff',
+                              fontWeight: '900',
+                              fontSize: 20,
+                            }}>
+                            {item.title}
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  )}
                 />
-                <Text
-                  onPress={() => navigation.navigate('PopularMenu')}
-                  style={{
-                    position: 'absolute',
-                    top: 100,
-                    left: 10,
-                    color: '#FFF',
-                    width: 100,
-                    fontWeight: '900',
-                    fontSize: 20,
-                  }}>
-                  Sandwich with Egg
-                </Text>
-              </View>
-              <View>
-                <Image
-                  style={{position: 'relative'}}
-                  source={require('../../assets/images/swipe1.png')}
-                />
-                <Text
-                  onPress={() => navigation.navigate('PopularMenu')}
-                  style={{
-                    position: 'absolute',
-                    top: 100,
-                    left: 10,
-                    color: '#FFF',
-                    width: 100,
-                    fontWeight: '900',
-                    fontSize: 20,
-                  }}>
-                  Sandwich with Egg
-                </Text>
-              </View>
-            </ScrollView>
+              </SafeAreaView>
+            )}
             <View
               style={{
                 flexDirection: 'row',
@@ -232,56 +256,56 @@ const Home = ({navigation}) => {
                 <Text>Dessert</Text>
               </View>
             </View>
-            <Text style={{fontSize: 20}}>Popular For you</Text>
+            <Text style={{fontSize: 20}}>New Recipes For you</Text>
             <ScrollView
               horizontal
-              style={{flexDirection: 'row', marginTop: 10}}>
-              <View
-                style={{
-                  position: 'relative',
-                  //   borderWidth: 0.5,
-                  borderRadius: 8,
-                  overflow: 'hidden',
-                  marginRight: 10,
-                }}>
-                <Image
-                  resizeMode="cover"
-                  source={require('../../assets/images/beefSteak.png')}
-                />
-                <View
-                  style={{
-                    backgroundColor: '#FFF',
-                    position: 'absolute',
-                    top: 75,
-                    width: '100%',
-                    padding: 5,
-                  }}>
-                  <Text style={{fontWeight: 'bold'}}>Beef Steak</Text>
-                  <Text>Beef steak with nopales, tartare ....</Text>
-                </View>
-              </View>
-              <View
-                style={{
-                  position: 'relative',
-                  borderRadius: 8,
-                  overflow: 'hidden',
-                }}>
-                <Image
-                  resizeMode="cover"
-                  source={require('../../assets/images/spagheti.png')}
-                />
-                <View
-                  style={{
-                    backgroundColor: '#FFF',
-                    position: 'absolute',
-                    top: 75,
-                    width: '100%',
-                    padding: 5,
-                  }}>
-                  <Text style={{fontWeight: 'bold'}}>Spaghetti</Text>
-                  <Text>Carbonara sauce with grilled ...</Text>
-                </View>
-              </View>
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+              style={{flexDirection: 'row', marginTop: 10, marginBottom: 20}}>
+              {menuHome.isLoading ? (
+                <ActivityIndicator color="rgba(239, 200, 26, 1)" size="large" />
+              ) : (
+                <>
+                  {menuHome.data.data.map((recipe, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() =>
+                        navigation.navigate('DetailMenu', {
+                          itemId: recipe.id,
+                        })
+                      }>
+                      <View
+                        style={{
+                          position: 'relative',
+                          borderRadius: 8,
+                          overflow: 'hidden',
+                          marginRight: 10,
+                        }}>
+                        <Image
+                          resizeMode="cover"
+                          style={{width: 150, height: 150}}
+                          source={{uri: recipe.photo}}
+                        />
+                        <View
+                          style={{
+                            backgroundColor: '#FFF',
+                            position: 'absolute',
+                            top: 75,
+                            width: '100%',
+                            height: '50%',
+                            padding: 5,
+                          }}>
+                          <Text style={{fontWeight: 'bold'}}>
+                            {recipe.title}
+                          </Text>
+                          <Text>{recipe.ingredients.slice(0, 20)}...</Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </>
+              )}
             </ScrollView>
           </ScrollView>
         )}
